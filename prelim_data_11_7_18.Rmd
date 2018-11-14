@@ -175,9 +175,9 @@ RT is longer on transition nodes (4 to 5 or 5 to 4).
 # Subject 3
 
 ```{r}
-exposureData <- read.delim(paste0(logdir, "NL003/NL003_log_run1.csv"))
-seqcmplData <- read.csv(paste0(datadir, "NL003/seqcmpl/NL003_log_seqcmpl.csv"))
-omotData<- read.csv(paste0(datadir, "NL003/OMOT/NL003_log_omot.csv"))
+exposureData <- read.delim(paste0(logdir, "NL004/NL004_log_run1.csv"))
+seqcmplData <- read.csv(paste0(datadir, "NL004/seqcmpl/NL004_log_seqcmpl.csv"))
+#omotData<- read.csv(paste0(datadir, "NL006/OMOT/NL006_log_omot.csv"))
 #seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, levels=c(1,0), labels=c("Incorrect", "Correct"))
 #omotData$correct <- factor(omotData$correct, ordered=TRUE, labels=c("Incorrect", "Correct")) #commented out because if make them factors then can't do proportion calculations on them.
 ```
@@ -192,7 +192,7 @@ summary(exposureData$rt)
 **Does RT go down or up as the task goes on?**
 
 ```{r}
-plot(exposureData$TrialNumber, exposureData$rt)
+plot(exposureData$TrialNumber, exposureData$rt, main= "Sample Adult")
 cor.test(exposureData$TrialNumber, exposureData$rt)
 ```
 It goes down (not surprisingly)!
