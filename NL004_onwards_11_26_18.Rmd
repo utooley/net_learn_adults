@@ -1,0 +1,380 @@
+---
+title: "Piloting Graph Learning in Adults"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+```{r}
+suppressMessages(library(summarytools, quietly = TRUE))
+suppressMessages(library(dplyr, quietly = TRUE))
+logdir='~/Dropbox/projects/in_progress/network_learning/code/netlearn_kids_v1/logs/'
+datadir='~/Dropbox/projects/in_progress/network_learning/code/netlearn_kids_v1/subjData/'
+```
+
+We started out running adults with exposure walks of ~200-300 trials, but in service of having it be doable for kids, iterated down to 150 trials. Here we examine only data from adults run on a version of the task with 150 trials of exposure (NL004 and onwards). Each subject has either the OMOT or the Dyadic Choice task.
+
+At NL008, made the change for tapping on the monsters to advance, tap as quickly as you can, the tap makes a sound, and string all assessments together rather than opening each separately.
+
+## NL004
+
+```{r}
+exposureData <- read.delim(paste0(logdir, "NL004/NL004_log_run1.csv"))
+seqcmplData <- read.csv(paste0(datadir, "NL004/seqcmpl/NL004_log_seqcmpl.csv"))
+#omotData<- read.csv(paste0(datadir, "NL004/OMOT/NL004_log_omot.csv"))
+dyadData <- read.csv(paste0(datadir, "NL004/dyad_choice/NL004_log_dyad_choice.csv"))
+seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, levels=c(0,1), labels=c("Incorrect", "Correct"))
+#omotData$correct <- factor(omotData$correct, ordered=TRUE, labels=c("Incorrect", "Correct")) #commented out because if make them factors then can't do proportion calculations on them.
+```
+
+### Exposure data
+
+What does reaction time on the exposure walk look like?
+```{r}
+view(dfSummary(exposureData))
+summary(exposureData$rt)
+```
+
+**Does RT go down or up as the task goes on?**
+
+```{r}
+plot(exposureData$TrialNumber, exposureData$rt, main= "RT by Trial Number")
+cor.test(exposureData$TrialNumber, exposureData$rt)
+```
+
+It goes down (not surprisingly)!
+
+**Is RT longer after transition nodes?**
+```{r}
+exposureData$transition_node <- ifelse((exposureData$node1==4 & exposureData$node2 ==5) |(exposureData$node1 ==5 & exposureData$node2 ==4), 1, 0)
+exposureData$transition_node <- factor(exposureData$transition_node, labels=c("No", "Yes"))
+exposureData %>%  group_by(transition_node) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+No, it's not.
+
+**How long does it take with 150 nodes?**
+```{r}
+max(exposureData$onset)/60
+```
+### Sequence Completion Task
+
+```{r}
+table(seqcmplData$correct)
+```
+How many are correct (within rather than between community)? 100%
+
+### Dyadic Choice
+```{r}
+mean(dyadData$correct)
+```
+77% correct on Dyadic Choice.
+
+Does average number correct differ by trial type?
+```{r}
+dyadData %>% group_by(trial_type) %>% summarise(avg_correct=mean(correct))
+```
+Does the average number they say are friends (yes answers) differ by trial type?
+
+Haven't done this here.
+
+**Does RT differ by trial type?**
+```{r}
+dyadData %>% group_by(trial_type) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Yes! RT is longer in friends-between trials than friends-within, as expected. RT is longest in what should be the hardest trials (non-friends between distance 2 and non-friends within)
+
+**Does RT differ by sequence-longer later in the sequence, or shorter?**
+```{r}
+cor.test(dyadData$TrialNumber, dyadData$rt)
+```
+No, RT goes down with more trials.
+
+### Conclusions
+
+Did better than expected! 100% accuracy on sequence completion and 78% accuracy on dyadic choice.
+RT on OMOT looks as we might expect, lowest for conservative trials, highest on catch trials.
+Took 9 min with 150 nodes when not told to press as fast as you can.
+RT is not longer on transition nodes (4 to 5 or 5 to 4).
+
+## NL005
+
+```{r}
+exposureData <- read.delim(paste0(logdir, "NL005/NL005_log_run1.csv"))
+seqcmplData <- read.csv(paste0(datadir, "NL005/seqcmpl/NL005_log_seqcmpl.csv"))
+omotData<- read.csv(paste0(datadir, "NL005/OMOT/NL005_log_omot.csv"))
+#dyadData <- read.csv(paste0(datadir, "NL004/dyad_choice/NL004_log_dyad_choice.csv"))
+seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, levels=c(0,1), labels=c("Incorrect", "Correct"))
+#omotData$correct <- factor(omotData$correct, ordered=TRUE, labels=c("Incorrect", "Correct")) #commented out because if make them factors then can't do proportion calculations on them.
+```
+### Exposure data
+
+What does reaction time on the exposure walk look like?
+```{r}
+summary(exposureData$rt)
+```
+
+**Does RT go down or up as the task goes on?**
+
+```{r}
+plot(exposureData$TrialNumber, exposureData$rt, main= "RT by Trial Number")
+cor.test(exposureData$TrialNumber, exposureData$rt)
+```
+
+It goes down (not surprisingly)!
+
+**Is RT longer after transition nodes?**
+```{r}
+exposureData$transition_node <- ifelse((exposureData$node1==4 & exposureData$node2 ==5) |(exposureData$node1 ==5 & exposureData$node2 ==4), 1, 0)
+exposureData$transition_node <- factor(exposureData$transition_node, labels=c("No", "Yes"))
+exposureData %>%  group_by(transition_node) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Yes, by a lot!
+
+**How long does it take with 150 nodes?**
+```{r}
+max(exposureData$onset)/60
+```
+### Sequence Completion Task
+
+```{r}
+table(seqcmplData$correct)
+```
+How many are correct (within rather than between community)? 100%
+
+### Odd Man Out Task
+```{r}
+summary(omotData$correct)
+```
+On average, 78% correct on OMOT.
+
+Does average number correct differ by trial type?
+```{r}
+omotData %>% group_by(trial_type) %>% summarise(avg_correct=mean(correct))
+```
+The 'correct' answer for catch trials is the node that is 2 edges away rather than one edge away. 72% is still above chance on the non-conservative trials!
+
+**Does RT differ by trial type?**
+```{r}
+omotData %>% group_by(trial_type) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Average RT is lowest in conservative trials, as we would expect, since these should be the easiest!
+
+**Does RT differ by sequence-longer later in the sequence, or shorter?**
+```{r}
+cor.test(omotData$TrialNumber, omotData$rt)
+```
+Not significantly.
+
+### Conclusions
+
+Did better than expected! 100% accuracy on sequence completion and 78% accuracy on OMOT.
+RT on OMOT looks as we might expect, lowest for conservative trials, accuracy also highest for conservative trials and lowest for catch trials.
+Took 12 min with 150 nodes when not told to press as fast as you can.
+RT is not longer on transition nodes (4 to 5 or 5 to 4).
+
+## NL006
+```{r}
+exposureData <- read.delim(paste0(logdir, "NL006/NL006_log_run1.csv"))
+seqcmplData <- read.csv(paste0(datadir, "NL006/seqcmpl/NL006_log_seqcmpl.csv"))
+#omotData<- read.csv(paste0(datadir, "NL006/OMOT/NL006_log_omot.csv"))
+dyadData <- read.csv(paste0(datadir, "NL006/dyad_choice/NL006_log_dyad_choice.csv"))
+seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, levels=c(0,1), labels=c("Incorrect", "Correct"))
+#omotData$correct <- factor(omotData$correct, ordered=TRUE, labels=c("Incorrect", "Correct")) #commented out because if make them factors then can't do proportion calculations on them.
+```
+### Exposure data
+
+What does reaction time on the exposure walk look like?
+```{r}
+summary(exposureData$rt)
+```
+
+**Does RT go down or up as the task goes on?**
+
+```{r}
+plot(exposureData$TrialNumber, exposureData$rt, main= "RT by Trial Number")
+cor.test(exposureData$TrialNumber, exposureData$rt)
+```
+
+It goes down (not surprisingly)!
+
+**Is RT longer after transition nodes?**
+```{r}
+exposureData$transition_node <- ifelse((exposureData$node1==4 & exposureData$node2 ==5) |(exposureData$node1 ==5 & exposureData$node2 ==4), 1, 0)
+exposureData$transition_node <- factor(exposureData$transition_node, labels=c("No", "Yes"))
+exposureData %>%  group_by(transition_node) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Yes!
+
+**How long does it take with 150 nodes?**
+```{r}
+max(exposureData$onset)/60
+```
+### Sequence Completion Task
+
+```{r}
+table(seqcmplData$correct)
+```
+How many are correct (within rather than between community)? 88%
+
+### Dyadic Choice
+```{r}
+mean(dyadData$correct)
+```
+58% correct on Dyadic Choice.
+
+Does average number correct differ by trial type?
+```{r}
+dyadData %>% group_by(trial_type) %>% summarise(avg_correct=mean(correct))
+```
+Does the average number they say are friends (yes answers) differ by trial type?
+
+Haven't done this yet.
+
+**Does RT differ by trial type?**
+```{r}
+dyadData %>% group_by(trial_type) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Yes! RT is longest in non-friends within and non-friends between with a short distance.
+
+**Does RT differ by sequence-longer later in the sequence, or shorter?**
+```{r}
+cor.test(dyadData$TrialNumber, dyadData$rt)
+```
+No it does not.
+
+### Conclusions
+
+88% accuracy on sequence completion and 58% accuracy on dyadic choice.
+Took 9 min with 150 nodes when not told to press as fast as you can.
+RT is longer on transition nodes (4 to 5 or 5 to 4).
+
+
+## NL007
+
+```{r}
+exposureData <- read.delim(paste0(logdir, "NL007/NL007_log_run1.csv"))
+seqcmplData <- read.csv(paste0(datadir, "NL007/seqcmpl/NL007_log_seqcmpl.csv"))
+omotData<- read.csv(paste0(datadir, "NL007/OMOT/NL007_log_omot.csv"))
+#dyadData <- read.csv(paste0(datadir, "NL004/dyad_choice/NL004_log_dyad_choice.csv"))
+seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, levels=c(0,1), labels=c("Incorrect", "Correct"))
+#omotData$correct <- factor(omotData$correct, ordered=TRUE, labels=c("Incorrect", "Correct")) #commented out because if make them factors then can't do proportion calculations on them.
+```
+### Exposure data
+
+What does reaction time on the exposure walk look like?
+```{r}
+summary(exposureData$rt)
+```
+
+**Does RT go down or up as the task goes on?**
+
+```{r}
+plot(exposureData$TrialNumber, exposureData$rt, main= "RT by Trial Number")
+cor.test(exposureData$TrialNumber, exposureData$rt)
+```
+
+It goes down (not surprisingly)!
+
+**Is RT longer after transition nodes?**
+```{r}
+exposureData$transition_node <- ifelse((exposureData$node1==4 & exposureData$node2 ==5) |(exposureData$node1 ==5 & exposureData$node2 ==4), 1, 0)
+exposureData$transition_node <- factor(exposureData$transition_node, labels=c("No", "Yes"))
+exposureData %>%  group_by(transition_node) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Not really.
+
+**How long does it take with 150 nodes?**
+```{r}
+max(exposureData$onset)/60
+```
+### Sequence Completion Task
+
+```{r}
+table(seqcmplData$correct)
+```
+How many are correct (within rather than between community)? 62%
+
+### Odd Man Out Task
+```{r}
+summary(omotData$correct)
+```
+On average, 75% correct on OMOT.
+
+Does average number correct differ by trial type?
+```{r}
+omotData %>% group_by(trial_type) %>% summarise(avg_correct=mean(correct))
+```
+The 'correct' answer for catch trials is the node that is 2 edges away rather than one edge away. 44% is still above chance on the non-conservative trials!
+
+**Does RT differ by trial type?**
+```{r}
+omotData %>% group_by(trial_type) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Average RT is lowest in conservative trials, as we would expect, since these should be the easiest! Non-conservative is highest.
+
+**Does RT differ by sequence-longer later in the sequence, or shorter?**
+```{r}
+cor.test(omotData$TrialNumber, omotData$rt)
+```
+Not significantly, but gets slightly faster.
+
+### Conclusions
+
+62% accuracy on sequence completion and 75% accuracy on OMOT.
+RT on OMOT looks as we might expect, lowest for conservative trials, accuracy also highest for conservative trials.
+Took 13 min with 150 nodes when not told to press as fast as you can.
+RT is not longer on transition nodes (4 to 5 or 5 to 4).
+
+## NL008
+
+NL008 only finished the sequence completion task, did not do dyadic choice or OMOT due to an error in the code.
+Here, we changed the protocol to be better for kids such that participants had to tap on the monsters, which then made a sound, and do it as fast as they can.
+
+```{r}
+exposureData <- read.delim(paste0(logdir, "NL008/NL008_log_run1.csv"))
+seqcmplData <- read.csv(paste0(datadir, "NL008/seqcmpl/NL008_log_seqcmpl.csv"))
+seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, levels=c(0,1), labels=c("Incorrect", "Correct"))
+```
+### Exposure data
+
+What does reaction time on the exposure walk look like?
+```{r}
+summary(exposureData$rt)
+```
+
+**Does RT go down or up as the task goes on?**
+
+```{r}
+plot(exposureData$TrialNumber, exposureData$rt, main= "RT by Trial Number")
+cor.test(exposureData$TrialNumber, exposureData$rt)
+```
+
+It goes down a lot!
+
+**Is RT longer after transition nodes?**
+```{r}
+exposureData$transition_node <- ifelse((exposureData$node1==4 & exposureData$node2 ==5) |(exposureData$node1 ==5 & exposureData$node2 ==4), 1, 0)
+exposureData$transition_node <- factor(exposureData$transition_node, labels=c("No", "Yes"))
+exposureData %>%  group_by(transition_node) %>% summarise(avg_rt=mean(rt), med_rt=median(rt), std_dev=sd(rt), n_trials=n())
+```
+Average is, but not really.
+
+**How long does it take with 150 nodes?**
+```{r}
+max(exposureData$onset)/60
+```
+7.5 minutes, still long!
+### Sequence Completion Task
+
+```{r}
+table(seqcmplData$correct)
+```
+How many are correct (within rather than between community)? 75%
+
+### Conclusions
+
+75% accuracy on sequence completion.
+RT on OMOT looks as we might expect, lowest for conservative trials, accuracy also highest for conservative trials.
+Took 7.5 min with 150 nodes when pressing as fast as they can on an alien.
+RT is only a little longer on transition nodes (4 to 5 or 5 to 4).

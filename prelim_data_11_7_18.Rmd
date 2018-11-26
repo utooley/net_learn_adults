@@ -6,16 +6,6 @@ output:
     df_print: paged
   pdf_document: default
 ---
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 ```{r}
 library(summarytools, quietly = TRUE)
 library(dplyr, quietly = TRUE)
@@ -27,7 +17,10 @@ omotData<- read.csv(paste0(datadir, "NL001/OMOT/NL001_log_omot.csv"))
 seqcmplData$correct <- factor(seqcmplData$correct, ordered=TRUE, labels=c("Incorrect", "Correct"))
 ```
 
-## Check each assessment for data quality
+We started out running adults with exposure walks of ~200-300 trials, but in service of having it be doable for kids, iterated down to 150 trials. Here we examine only data from adults run on a version of the task with 150 trials of exposure (NL004 and onwards).
+
+At NL008, made the change for tapping on the monsters to advance, tap as quickly as you can, and string all assessments together rather than opening each separately.
+## NL004
 
 ```{r}
 view(dfSummary(exposureData))
